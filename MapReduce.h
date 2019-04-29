@@ -7,13 +7,6 @@ typedef struct key_value {
     key_value* next;
 } key_value;
 
-// char** split(char* file_name);
-
-// char** map(char* file_name);
-
-// void reduce(HashMap* hash_map);
-
-// int shuffle(char* key);
 
 char** (*split) (char*);
 char** (*map) (char*);
