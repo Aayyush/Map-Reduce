@@ -26,7 +26,3 @@ void run_map_reduce(){
     // Wait for all the reducers 
     // Merge all output files. 
 }
-
-int main(){
-    return 0;
-}

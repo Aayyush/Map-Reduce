@@ -1,3 +1,6 @@
+#ifndef MAPREDUCE_H
+#define MAPREDUCE_H
+
 #include "HashMap.h"
 typedef struct key_value key_value;
 
@@ -20,3 +23,5 @@ void* run_mapper(void* args);
 void* run_reducer(void* args);
 
 void run_map_reduce();
+
+#endif
