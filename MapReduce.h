@@ -1,4 +1,5 @@
 #include "HashMap.h"
+typedef struct key_value key_value;
 
 typedef struct key_value {
     char* key;
@@ -6,14 +7,23 @@ typedef struct key_value {
     key_value* next;
 } key_value;
 
+// char** split(char* file_name);
 
-void map(char* fileName);
+// char** map(char* file_name);
 
-void reduce();
+// void reduce(HashMap* hash_map);
 
-void split();
+// int shuffle(char* key);
 
-void shuffle();
+char** (*split) (char*);
+char** (*map) (char*);
+void (*reduce)(HashMap*);
+int (*shuffle) (char*);
 
+void initialize_map_reduce(char** (*s) (char*) , char** (*m) (char*) , void (*r)(HashMap*) , int (*sf) (char*));
 
-void init()
+void* run_mapper(void* args);
+
+void* run_reducer(void* args);
+
+void run_map_reduce();
