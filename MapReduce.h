@@ -8,15 +8,23 @@ typedef struct key_value {
 } key_value;
 
 
-char** (*split) (char*);
-char** (*map) (char*);
-void (*reduce)(HashMap*);
-int (*shuffle) (char*);
+extern char** (*split) (char*);
+extern key_value* (*map) (char*);
+extern void (*reduce)(HashMap*);
+extern int (*shuffle) (char*);
+extern int num_mappers; 
+extern int num_reducers; 
 
-void initialize_map_reduce(char** (*s) (char*) , char** (*m) (char*) , void (*r)(HashMap*) , int (*sf) (char*));
+void initialize_map_reduce(int n_mappers, int n_reducers, char** (*s) (char*) , key_value* (*m) (char*) , void (*r)(HashMap*) , int (*sf) (char*));
 
 void* run_mapper(void* args);
 
 void* run_reducer(void* args);
 
 void run_map_reduce();
+
+char* get_file_name_from_mapper_index(int index);
+
+char* get_reducer_directory_from_index(int index);
+
+char* get_output_file_location(char* reducer_directory, int index);
