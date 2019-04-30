@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "MapReduce.h"
 
 #define NUMBER_OF_MAPPERS 10

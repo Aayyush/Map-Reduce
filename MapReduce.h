@@ -1,3 +1,6 @@
+#ifndef MAPREDUCE_H
+#define MAPREDUCE_H
+
 #include "HashMap.h"
 typedef struct key_value key_value;
 
