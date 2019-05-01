@@ -19,7 +19,9 @@ int hash(unsigned char* str){
 
 void insert_hash_pair(HashMap* map, char* key, void* value, int size){
     int hash_index = hash((unsigned char*) key);  // Get the hash value.
-
+    
+    // Make a copy of value. Making a copy of key isn't required because
+    // c string are stored in heap by convention.
     void* value_copy = malloc(sizeof(value));
     memcpy(value_copy, value, size);
     value = value_copy;

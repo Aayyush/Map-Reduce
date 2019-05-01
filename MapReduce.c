@@ -52,7 +52,6 @@ void* run_mapper(void* args){
         file_handles[i] = fopen(out_file_location, "w");
     }
     
-);
     int i = 0;
     for (key_value *curr = key_value_list; curr != NULL; curr = curr->next) { 
         reducer_index = (*shuffle)(curr->key);
@@ -60,11 +59,11 @@ void* run_mapper(void* args){
         fprintf(file_handles[reducer_index], "(%s, %s)\n", curr->key, (char *)curr->value);
         i++;
     }
-    return;
+    return NULL;
 }
 
 void* run_reducer(void* args){
-    
+    return NULL;
 }
 
 void run_map_reduce(){
