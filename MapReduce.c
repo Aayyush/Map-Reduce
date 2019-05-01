@@ -8,7 +8,7 @@
 // Function signatures for the user-input. 
 char** (*split) (char*);
 key_value* (*map) (char*);
-void (*reduce)(HashMap*);
+void (*reduce)(char*, LinkedList*);
 int (*shuffle) (char*);
 
 int num_mappers;
@@ -63,6 +63,77 @@ void* run_mapper(void* args){
 }
 
 void* run_reducer(void* args){
+    int reducer_index = *(int *) args;
+    HashMap* map = initialize_hash_map();
+    
+    
+    // Loop through all the keys in it's associated files.
+    for (int i = 0; i < 1; i++){  // TODO: Replace 1 with num_mappers.
+        
+        // Get name and open the file.
+        char filename[100];
+        sprintf(filename, "./reducer_00/reduce.txt");  // TODO: Change this.
+        FILE* temp_reducer_file = fopen(filename, "r");
+        
+        // Loop through the key-value pairs and store them in hashmap.
+        char key_buffer[500];
+        int value;
+        while(fscanf(temp_reducer_file, "%s %d", key_buffer, &value) > 1){
+            
+            // Initialize the linked list.
+            LinkedList* curr_list = calloc(1, sizeof(LinkedList));
+            curr_list->value = value;
+            curr_list->next = NULL;
+            
+            KeyValue* ret_key_val;
+            ret_key_val = retrieve_hash_pair(map, key_buffer);
+            
+            if (ret_key_val == NULL){  // Key isn't in the map. 
+                // Make a copy of the key.
+                char* temp_key = calloc(1, strlen(key_buffer) +1);
+                strcpy(temp_key, key_buffer);
+                
+                // Insert the linked list into hashmap.
+                insert_hash_pair(map, temp_key, curr_list, sizeof(curr_list));
+                
+            } else {  // Key is in the map.
+                
+                // Insert the new value into the linked list.
+                LinkedList* ret_list = (LinkedList *)ret_key_val->value;
+                
+                LinkedList* temp_next = ret_list->next;
+                ret_list->next = curr_list;
+                curr_list->next = temp_next;
+            }
+        }
+        fclose(temp_reducer_file);  // Close the file.
+    }
+    
+//     // TEST: Print the hash map
+//     for (int i = 0; i < HASHTABLE_SIZE; i++){
+//         if (map->hash_map[i] != NULL){
+//             KeyValue* curr_kv = map->hash_map[i];
+//             while (curr_kv){
+//                 printf("%s --> ", curr_kv->key);
+//                 LinkedList* temp = (LinkedList *)curr_kv->value;
+//                 while (temp){
+//                     printf("%d --> ", temp->value);
+//                     temp = temp->next;
+//                 }
+//                 printf("\\ \n");
+//                 curr_kv = curr_kv->next;
+//             }
+//            printf("EEEENNNDDDDD\n"); 
+//         }
+//     }
+    
+    // Get the keys.
+    HashMapIterator* iter = initialize_hash_map_iterator(map);
+    KeyValue* curr_kv;
+    while ((curr_kv = next_hash_map_item(iter))){
+        (*reduce)(curr_kv->key, curr_kv->value);
+    }
+    
     return NULL;
 }
 

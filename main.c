@@ -40,7 +40,7 @@ key_value* _map(char* fileName) {
     return head;
 }
 
-void _reduce(HashMap* hash_map) {
+void _reduce(char* key, LinkedList* list) {
     return;
 }
 
@@ -56,6 +56,7 @@ int main(){
     initialize_map_reduce(NUMBER_OF_MAPPERS, NUMBER_OF_REDUCERS, &_split, &_map, &_reduce, &_shuffle);
     int* t = (int*)malloc(sizeof(int));
     (*t) = 1;
-    run_mapper(t);
+    //run_mapper(t);
+    run_reducer(t);
     return 0;
 }
