@@ -122,5 +122,9 @@ KeyValue* next_hash_map_item(HashMapIterator* iter){
     return NULL;
 }
 
+void destroy_hash_map_iterator(HashMapIterator* iter){
+    free(iter);
+}
+
 
 

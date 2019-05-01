@@ -40,8 +40,17 @@ key_value* _map(char* fileName) {
     return head;
 }
 
-void _reduce(char* key, LinkedList* list) {
-    return;
+key_value* _reduce(char* key, LinkedList* list) {
+    key_value* kv = calloc(1, sizeof(kv));
+    kv->key = key;
+    
+    int* result = calloc(1, sizeof(int));
+    LinkedList* temp_list = list;
+    for (; temp_list; temp_list = temp_list->next){
+        *result = *result + temp_list->value;
+    }
+    kv->value = (void *)result;
+    return kv;
 }
 
 int _shuffle(char* key) {

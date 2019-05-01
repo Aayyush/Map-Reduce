@@ -20,7 +20,7 @@ typedef struct LinkedList {
 
 extern char** (*split) (char*);
 extern key_value* (*map) (char*);
-extern void (*reduce)(char*, LinkedList*);
+extern key_value* (*reduce)(char*, LinkedList*);
 extern int (*shuffle) (char*);
 extern int num_mappers; 
 extern int num_reducers; 

@@ -31,6 +31,7 @@ void destroy_hash_table(HashMap*);
 
 HashMapIterator* initialize_hash_map_iterator(HashMap*);
 KeyValue* next_hash_map_item(HashMapIterator*);
+void destroy_hash_map_iterator(HashMapIterator*);
 
 // Calculate the hash value of the given string.
 int hash(unsigned char*);
