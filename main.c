@@ -5,10 +5,32 @@
 #define NUMBER_OF_MAPPERS 10
 #define NUMBER_OF_REDUCERS 4
 
-char** _split(char* fileName) {
-    char *temp = (char*)malloc(sizeof(12));
-    sprintf(temp, "Hello World!");
-    return &temp;
+char** _split(char* fileName, int number_of_mappers) {
+    FILE *input_file = fopen("input.txt", "r");
+    char* word; 
+    int word_count = 0; 
+    char* fileName;
+    FILE *file_handles[number_of_mappers];
+    FILE *output_file_handle; 
+    int words_written;
+    
+    // Declare a pointer to array of strings for fileNames. 
+    char*** list_of_split_files = (char***)malloc(sizeof(char**) * number_of_mappers);
+    
+    // Open all the file handles. 
+    for(int i = 0; i < number_of_mappers; ++i){
+        (*list_of_split_files)[i] = get_split_filename_from_mapper_index(i);
+        file_handles[i] = fopen(get_split_filename_from_mapper_index(i), "w+");
+    }
+    
+    words_written = 0;
+    while(fscanf(input_file, "%s", word) >0){
+        // Get the file to write to using count%number_of_mappers. 
+        output_file_handle = file_handles[words_written % number_of_mappers];
+        fprintf(output_file_handle, "%s\n", word);
+    }
+    
+    return list_of_split_files;
 }
 
 key_value* _map(char* fileName) {
@@ -65,7 +87,7 @@ int main(){
     initialize_map_reduce(NUMBER_OF_MAPPERS, NUMBER_OF_REDUCERS, &_split, &_map, &_reduce, &_shuffle);
     int* t = (int*)malloc(sizeof(int));
     (*t) = 1;
-    //run_mapper(t);
+    run_mapper(t);
     run_reducer(t);
     return 0;
 }

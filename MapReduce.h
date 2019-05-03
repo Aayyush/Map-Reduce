@@ -18,7 +18,7 @@ typedef struct LinkedList {
     LinkedList* next;
 } LinkedList;
 
-extern char** (*split) (char*);
+extern char** (*split) (char*, int);
 extern key_value* (*map) (char*);
 extern key_value* (*reduce)(char*, LinkedList*);
 extern int (*shuffle) (char*);
@@ -38,5 +38,7 @@ char* get_file_name_from_mapper_index(int index);
 char* get_reducer_directory_from_index(int index);
 
 char* get_output_file_location(char* reducer_directory, int index);
+
+char* get_split_filename_from_mapper_index(int index);
 
 #endif

@@ -6,7 +6,7 @@
 #include "MapReduce.h"
 
 // Function signatures for the user-input. 
-char** (*split) (char*);
+char** (*split) (char*, int);
 key_value* (*map) (char*);
 key_value* (*reduce)(char*, LinkedList*);
 int (*shuffle) (char*);
@@ -154,5 +154,11 @@ char* get_file_name_from_mapper_index(int index) {
     // char* extension = ".txt";
     char* file_name = (char*)malloc(13);
     sprintf(file_name, "split_0%d.txt", index);
+    return file_name;
+}
+
+char* get_split_filename_from_mapper_index(int index){
+    char* file_name = (char*)malloc(19);
+    sprintf(file_name, "split/split_0%d.txt", index);
     return file_name;
 }
