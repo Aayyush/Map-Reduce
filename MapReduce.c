@@ -24,41 +24,58 @@ void initialize_map_reduce(int n_mappers, int n_reducers, char** (*s) (char*) , 
 }
 
 void* run_mapper(void* args){
-    // Cast args to index. 
-    // Get filename from index. 
-    // Call map with the filename and get linked list of key and values. 
-    // Iterate over each node, get the key, use shuffle to get the reducer index. 
-    // Get filename from the reducer index. 
-    // Make a directory for the reducer if it does not exist. 
-    // If exists, write to the reducer directory. 
-    
-    int mapper_index = *(int*)args;
-    
-    FILE *file_handles[num_reducers];
     char* reducer_directory;
     char* out_file_location; 
     int reducer_index;
     struct stat sb;
+    int mapper_index = *(int*)args;
     key_value* key_value_list; 
+
+    // File handles for each reducer to write to. 
+    FILE *file_handles[num_reducers];
+    
+    // Split file to read from, used mapper_index. 
     char* input_filename = get_file_name_from_mapper_index(mapper_index);
     
     // Make directory for all the reducers. 
+    // Open file handles for each reducer. 
     for (int i = 0; i < num_reducers; ++i){
         reducer_directory = get_reducer_directory_from_index(i);
+        
+        // Make directory if not exist. 
         if (!(stat(reducer_directory, &sb) == 0 && S_ISDIR(sb.st_mode))){
             mkdir(reducer_directory, 0777);
         }
+        
+        // Output file location is ./reducer_directory/mapper_file
         out_file_location = get_output_file_location(reducer_directory, i);
         file_handles[i] = fopen(out_file_location, "w");
     }
     
+    // Run user-defined map function.
+    // Returns a linked list of key value pairs. 
+    key_value_list = (*map)(input_filename);
+    
     int i = 0;
-    for (key_value *curr = key_value_list; curr != NULL; curr = curr->next) { 
-        reducer_index = (*shuffle)(curr->key);
-        printf("Reducer index: %d\n", reducer_index);
-        fprintf(file_handles[reducer_index], "(%s, %s)\n", curr->key, (char *)curr->value);
+    while(key_value_list != NULL) {
+        // User-defined shuffle function to get reducer index to write to. 
+        reducer_index = (*shuffle)(key_value_list->key);
+        fprintf(file_handles[reducer_index], "(%s, %d)\n", key_value_list->key, *((int *)key_value_list->value));
+        
+        // Free each node as you go. 
+        key_value *temp = key_value_list;
+        key_value_list = key_value_list->next;
+        free(temp);
         i++;
     }
+    
+    // Close all file_handles
+    for(int i = 0; i < num_reducers; ++i) {
+        fclose(file_handles[i]);
+    }
+    
+    free(reducer_directory);
+    free(out_file_location);
     return NULL;
 }
 

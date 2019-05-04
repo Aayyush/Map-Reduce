@@ -39,4 +39,5 @@ char* get_reducer_directory_from_index(int index);
 
 char* get_output_file_location(char* reducer_directory, int index);
 
+
 #endif

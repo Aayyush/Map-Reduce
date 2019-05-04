@@ -1,27 +1,40 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
 #include "MapReduce.h"
 
 #define NUMBER_OF_MAPPERS 10
 #define NUMBER_OF_REDUCERS 4
 
 char** _split(char* fileName) {
-    char *temp = (char*)malloc(sizeof(12));
-    sprintf(temp, "Hello World!");
-    return &temp;
+    char **temp = (char**)malloc(sizeof(char*));
+    *temp = (char*)malloc(12);
+    sprintf(*temp, "Hello World!");
+    return *temp;
 }
 
-key_value* _map(char* fileName) {
-    // Read file. 
-    // For each word, create a new key as word, value as 1. 
+key_value* _map(char* fileName) { 
     FILE *fp_in = fopen(fileName, "r");
-    char* temp;
+    char *temp;
+    
+    // Pointers for the linked list. 
     key_value *head, *curr; 
     head = curr = NULL;
     
-    int i = 0; 
+    // Counter for value in the tuple. 
+    int i = 0;
+    
+    // Read the file until end of file. 
     while (fscanf(fp_in, "%s", temp) > 0){
-        printf("Key: %s\n", temp);
+        
+        // Make a copy of the string read from the file. 
+        // All the nodes in the list point to the same string 
+        // if we don't make a copy because temp is a pointer
+        // which does not change. 
+        char *copy = (char*)malloc(sizeof(strlen(temp)));
+        strcpy(copy, temp);
         
         if (head == NULL) {
             head = (key_value*)malloc(sizeof(key_value));;
@@ -31,12 +44,21 @@ key_value* _map(char* fileName) {
             curr->next = (key_value*)malloc(sizeof(key_value));;
             curr = curr->next;
         }
-        curr->key = temp;
-        curr->value = (int) i;
+        curr->key = copy;
+        
+        // Assign the pointer to an integer on heap. 
+        int **t = (int**)malloc(sizeof(int*));
+        *t = (int*)malloc(sizeof(int));
+        
+        // Increment the counter. 
+        **t = ++i;
+        curr->value = *t;
         curr->next = NULL;
-        i++;
     }
+    
+    // Close file after reading. 
     fclose(fp_in);
+    
     return head;
 }
 
@@ -54,15 +76,16 @@ key_value* _reduce(char* key, LinkedList* list) {
 }
 
 int _shuffle(char* key) {
-    printf("Shuffle key is %s Char is %c\n", key, *key);
-    int* t = (int*)malloc(sizeof(int));
-    (*t) = ((*key) - 'a' + 1) % 5;
-    printf("Key is %s Reducer Index is %d\n", key, *t);
-    return *t;
+    int t = (tolower(*key) - 'a' + 1) % NUMBER_OF_REDUCERS;
+    printf("To Reducer %d\n", t);
+    return t;
 }
 
 int main(){
     initialize_map_reduce(NUMBER_OF_MAPPERS, NUMBER_OF_REDUCERS, &_split, &_map, &_reduce, &_shuffle);
+     
+    // Run mapper called for each NUMBER_OF_MAPPERS, with the mapper_index given by the split 
+    // function. Work around for now.
     int* t = (int*)malloc(sizeof(int));
     (*t) = 1;
     //run_mapper(t);
