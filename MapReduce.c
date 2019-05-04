@@ -78,7 +78,7 @@ void* run_reducer(void* args){
         
         // Get name and open the file.
         char filename[100];
-        sprintf(filename, "./reducer_00/reduce.txt");  // TODO: Change this.
+        sprintf(filename, "reducer_0%d//map_%d.txt", reducer_index, i);  // TODO: Change this.
         FILE* temp_reducer_file = fopen(filename, "r");
         
         // Loop through the key-value pairs and store them in hashmap.
@@ -87,26 +87,26 @@ void* run_reducer(void* args){
         while(fscanf(temp_reducer_file, "%s %d", key_buffer, &value) > 1){
             
             // Initialize the linked list.
-            LinkedList* curr_list = calloc(1, sizeof(LinkedList));
+            LinkedList* curr_list = malloc(sizeof(LinkedList));
             curr_list->value = value;
             curr_list->next = NULL;
             
             KeyValue* ret_key_val;
             ret_key_val = retrieve_hash_pair(map, key_buffer);
             
+            // Make a copy of the key.
+            char* temp_key = calloc(1, sizeof(key_buffer));
+            sprintf(temp_key,  "%s", key_buffer);
+            
             if (ret_key_val == NULL){  // Key isn't in the map. 
-                // Make a copy of the key.
-                char* temp_key = calloc(1, strlen(key_buffer) +1);
-                strcpy(temp_key, key_buffer);
-                
                 // Insert the linked list into hashmap.
-                insert_hash_pair(map, temp_key, curr_list, sizeof(curr_list));
+                insert_hash_pair(map, temp_key, curr_list, sizeof(LinkedList));
                 
             } else {  // Key is in the map.
-                
+               
                 // Insert the new value into the linked list.
                 LinkedList* ret_list = (LinkedList *)ret_key_val->value;
-                
+
                 LinkedList* temp_next = ret_list->next;
                 ret_list->next = curr_list;
                 curr_list->next = temp_next;
@@ -116,19 +116,26 @@ void* run_reducer(void* args){
     }
     
     char filename[100];
-    sprintf(filename, "./reducer_00/result.txt");
+    sprintf(filename, "./reducer_results/reducer_%d.txt", reducer_index);
     FILE* fp = fopen(filename, "w");
     
     // Get the keys.
     HashMapIterator* iter = initialize_hash_map_iterator(map);
     KeyValue* curr_kv;
     while ((curr_kv = next_hash_map_item(iter))){
-        key_value* ret_kv = (*reduce)(curr_kv->key, (LinkedList *)curr_kv->value);
-        fprintf(fp, "%s %d\n", ret_kv->key, *(int *)ret_kv->value);
+        key_value* ret_kv = (*reduce)(curr_kv->key, (LinkedList*)curr_kv->value);
+        // Print the linked list.
+        printf("%s = ", ret_kv->key);
+        for (LinkedList* x = (LinkedList*)curr_kv->value; x; x= x->next){
+            printf("%d + ", x->value);
+        }
+        fprintf(fp, "%s %d\n", ret_kv->key, *(int*)ret_kv->value);
+        printf(" = %d\n", *(int*)ret_kv->value);
         free(ret_kv->value);
         free(ret_kv);
     }
     destroy_hash_map_iterator(iter);
+    fclose(fp);
     
     return NULL;
 }
@@ -143,7 +150,7 @@ void run_map_reduce(){
     int mapper_index[num_mappers];
     for (int i = 0; i < num_mappers; i++){
         mapper_index[i] = i;
-        pthread_create(&mapper_ids[i], NULL, run_mapper, (void *) &mapper_index[i]);
+        pthread_create(&mapper_ids[i], NULL, run_mapper, (void*) &mapper_index[i]);
     }
     
     // Join the map threads.
@@ -151,21 +158,21 @@ void run_map_reduce(){
         pthread_join(mapper_ids[i], NULL);
     }
     
-//     // Create reduce threads.
-//     pthread_t reducer_ids[num_reducers];
-//     int reducer_index[num_reducers];
-//     for (int i = 0; i < num_reducers; i++){
-//         reducer_index[i] = i;
-//         pthread_create(&reducer_ids[i], NULL, run_reducer, (void*) &reducer_index[i]);
-//     }
+    // Create reduce threads.
+    pthread_t reducer_ids[num_reducers];
+    int reducer_index[num_reducers];
+    for (int i = 0; i < num_reducers; i++){
+        reducer_index[i] = i;
+        pthread_create(&reducer_ids[i], NULL, run_reducer, (void*) &reducer_index[i]);
+    }
     
-//     // Join reduce threads.
-//     for (int i = 0; i < num_reducers; i++){
-//         pthread_join(reducer_ids[i], NULL);
-//     }
+    // Join reduce threads.
+    for (int i = 0; i < num_reducers; i++){
+        pthread_join(reducer_ids[i], NULL);
+    }
     
-//     // Join the files.
-//     return;
+    // Join the files.
+    return;
 }
 
 char* get_reducer_directory_from_index(int index) {

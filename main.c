@@ -77,7 +77,7 @@ key_value* _map(int index) {
         strcpy(key_copy, key);
         
         curr->key = key_copy;
-        curr->value = (void*) &default_value;
+        curr->value = (void*) default_value;
         curr->next = NULL;
     }
     
@@ -90,8 +90,7 @@ key_value* _reduce(char* key, LinkedList* list) {
     kv->key = key;
     
     int* result = calloc(1, sizeof(int));
-    LinkedList* temp_list = list;
-    for (; temp_list; temp_list = temp_list->next){
+    for (LinkedList* temp_list = list; temp_list != NULL; temp_list = temp_list->next){
         *result = *result + temp_list->value;
     }
     kv->value = (void *)result;
@@ -99,49 +98,47 @@ key_value* _reduce(char* key, LinkedList* list) {
 }
 
 int _shuffle(char* key) {
-//     switch(key[0]) {
-//         case 97 ... 99:
-//         case 65 ... 67:
-//             return 0;
+    switch(key[0]) {
+        case 97 ... 99:
+        case 65 ... 67:
+            return 0;
         
-//         case 100 ... 102:
-//         case 68 ... 70:
-//             return 1;
+        case 100 ... 102:
+        case 68 ... 70:
+            return 1;
         
-//         case 103 ... 105:
-//         case 71 ... 73:
-//             return 2;
+        case 103 ... 105:
+        case 71 ... 73:
+            return 2;
 
-//         case 106 ... 108:
-//         case 74 ... 76:
-//             return 3;
+        case 106 ... 108:
+        case 74 ... 76:
+            return 3;
 
-//         case 109 ... 111:
-//         case 77 ... 79:
-//             return 4;
+        case 109 ... 111:
+        case 77 ... 79:
+            return 4;
 
-//         case 112 ... 114:
-//         case 80 ... 82:
-//             return 5;
+        case 112 ... 114:
+        case 80 ... 82:
+            return 5;
         
-//         case 115 ... 117:
-//         case 83 ... 85:
-//             return 6;
+        case 115 ... 117:
+        case 83 ... 85:
+            return 6;
         
-//         case 118 ... 120:
-//         case 86 ... 88:
-//             return 7;
+        case 118 ... 120:
+        case 86 ... 88:
+            return 7;
 
-//         case 121 ... 123:
-//         case 89 ... 91:
-//             return 8;
+        case 121 ... 123:
+        case 89 ... 91:
+            return 8;
 
-//         default:
-//             return 9;
+        default:
+            return 9;
 
-//     }
-        int a =  (tolower(key[0]) - 'a' + 1) % NUMBER_OF_REDUCERS;
-    return a;
+    }
         
 }
 

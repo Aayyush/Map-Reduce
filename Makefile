@@ -1,4 +1,4 @@
-makemakeCC = gcc
+CC = gcc
 CFLAGS = -g -pthread
 
 run: main.o MapReduce.o HashMap.o
