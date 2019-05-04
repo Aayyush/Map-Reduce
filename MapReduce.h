@@ -2,6 +2,7 @@
 #define MAPREDUCE_H
 
 #include "HashMap.h"
+
 typedef struct key_value key_value;
 
 typedef struct key_value {
@@ -10,10 +11,16 @@ typedef struct key_value {
     key_value* next;
 } key_value;
 
+typedef struct LinkedList LinkedList;
+
+typedef struct LinkedList {
+    int value;
+    LinkedList* next;
+} LinkedList;
 
 extern char** (*split) (char*);
 extern key_value* (*map) (char*);
-extern void (*reduce)(HashMap*);
+extern key_value* (*reduce)(char*, LinkedList*);
 extern int (*shuffle) (char*);
 extern int num_mappers; 
 extern int num_reducers; 
@@ -31,5 +38,6 @@ char* get_file_name_from_mapper_index(int index);
 char* get_reducer_directory_from_index(int index);
 
 char* get_output_file_location(char* reducer_directory, int index);
+
 
 #endif
