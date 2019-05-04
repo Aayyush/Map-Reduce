@@ -2,19 +2,20 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <pthread.h>
 
 #include "MapReduce.h"
 
 // Function signatures for the user-input. 
 char** (*split) (char*, int);
-key_value* (*map) (char*);
+key_value* (*map) (int);
 key_value* (*reduce)(char*, LinkedList*);
 int (*shuffle) (char*);
 
 int num_mappers;
 int num_reducers; 
 
-void initialize_map_reduce(int n_mappers, int n_reducers, char** (*s) (char*, int) , key_value* (*m) (char*) , key_value* (*r)(char*, LinkedList*) , int (*sf) (char*)){
+void initialize_map_reduce(int n_mappers, int n_reducers, char** (*s) (char*, int) , key_value* (*m) (int) , key_value* (*r)(char*, LinkedList*) , int (*sf) (char*)){
     num_mappers = n_mappers;
     num_reducers = n_reducers;
     split = s;
@@ -48,16 +49,21 @@ void* run_mapper(void* args){
         if (!(stat(reducer_directory, &sb) == 0 && S_ISDIR(sb.st_mode))){
             mkdir(reducer_directory, 0777);
         }
-        out_file_location = get_output_file_location(reducer_directory, i);
+        out_file_location = get_output_file_location(reducer_directory, mapper_index);
         file_handles[i] = fopen(out_file_location, "w");
     }
+    
+     key_value_list = (*map)(mapper_index); 
     
     int i = 0;
     for (key_value *curr = key_value_list; curr != NULL; curr = curr->next) { 
         reducer_index = (*shuffle)(curr->key);
-        printf("Reducer index: %d\n", reducer_index);
-        fprintf(file_handles[reducer_index], "(%s, %s)\n", curr->key, (char *)curr->value);
+        fprintf(file_handles[reducer_index], "%s %d\n", curr->key, *(int*)curr->value);
         i++;
+    }
+    
+    for (int i = 0; i < num_reducers; i++){
+        fclose(file_handles[i]);
     }
     return NULL;
 }
@@ -128,13 +134,38 @@ void* run_reducer(void* args){
 }
 
 void run_map_reduce(){
-    // Check all the functions are properly configured. 
-    // Split files based on number of mappers. 
-    // Create threads for each split, call run_mapper with index of the mapper. 
-    // Wait for all the mappers to finish execution. 
-    // Create thread for each reducer, call run_reducer and pass index of the reducer. 
-    // Wait for all the reducers 
-    // Merge all output files. 
+    
+    // Split the files.
+    (*split)("input.txt", num_mappers);
+    
+     // Create map threads.
+    pthread_t mapper_ids[num_mappers];
+    int mapper_index[num_mappers];
+    for (int i = 0; i < num_mappers; i++){
+        mapper_index[i] = i;
+        pthread_create(&mapper_ids[i], NULL, run_mapper, (void *) &mapper_index[i]);
+    }
+    
+    // Join the map threads.
+    for (int i = 0; i < num_mappers; i++){
+        pthread_join(mapper_ids[i], NULL);
+    }
+    
+//     // Create reduce threads.
+//     pthread_t reducer_ids[num_reducers];
+//     int reducer_index[num_reducers];
+//     for (int i = 0; i < num_reducers; i++){
+//         reducer_index[i] = i;
+//         pthread_create(&reducer_ids[i], NULL, run_reducer, (void*) &reducer_index[i]);
+//     }
+    
+//     // Join reduce threads.
+//     for (int i = 0; i < num_reducers; i++){
+//         pthread_join(reducer_ids[i], NULL);
+//     }
+    
+//     // Join the files.
+//     return;
 }
 
 char* get_reducer_directory_from_index(int index) {
@@ -143,9 +174,9 @@ char* get_reducer_directory_from_index(int index) {
     return directory_name;
 }
 
-char* get_output_file_location(char* reducer_directory, int index) {
-    char* directory_name = (char*)malloc(strlen(reducer_directory) + 14);
-    sprintf(directory_name, "%s/split_0%d.txt", reducer_directory, index);
+char* get_output_file_location(char* reducer_directory, int mapper_index) {
+    char* directory_name = (char*) malloc(50);
+    sprintf(directory_name, "%s/map_%d.txt", reducer_directory, mapper_index);
     return directory_name;
 }
 

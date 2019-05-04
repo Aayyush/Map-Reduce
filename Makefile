@@ -1,5 +1,5 @@
-CC = gcc
-CFLAGS = -g 
+makemakeCC = gcc
+CFLAGS = -g -pthread
 
 run: main.o MapReduce.o HashMap.o
 	$(CC) $(CFLAGS) -o run main.o MapReduce.o HashMap.o

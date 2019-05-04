@@ -3,43 +3,10 @@
 #include "MapReduce.h"
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #define NUMBER_OF_MAPPERS 10
-#define NUMBER_OF_REDUCERS 4
-
-// char** _split(char* fileName, int number_of_mappers) {
-//     FILE *input_file;
-//     char *word; 
-//     int word_count = 0; 
-//     FILE *file_handles[number_of_mappers];
-//     FILE *input_fh; 
-//     FILE *output_file_handle; 
-//     int words_written;
-    
-//     // Declare a pointer to array of strings for fileNames. 
-//     char ***list_of_split_files = (char***)malloc(sizeof(char**) * number_of_mappers);
-    
-//     // Open all the file handles. 
-//     for(int i = 0; i < number_of_mappers; ++i){
-//         char *address_to_write = (*list_of_split_files) + i * sizeof(char*);
-//         printf("File name is : %s\n", get_split_filename_from_mapper_index(i));
-//         address_to_write = get_split_filename_from_mapper_index(i);
-//         file_handles[i] = fopen(get_split_filename_from_mapper_index(i), "w+");
-//     }
-    
-//     printf("File handles open\n");
-    
-//     words_written = 0;
-//     input_file = fopen(fileName, "r");
-//     while(fscanf(input_file, "%s", word) > 1){
-//         // Get the file to write to using count%number_of_mappers. 
-//         printf("Word: %s\n", word);
-//         output_file_handle = file_handles[words_written % number_of_mappers];
-//         fprintf(output_file_handle, "%s\n", word);
-//     }
-    
-//     return *list_of_split_files;
-// }
+#define NUMBER_OF_REDUCERS 10
 
 
 void _split(char* filename, int num_splits){
@@ -50,44 +17,70 @@ void _split(char* filename, int num_splits){
     int size = ftell(fp); // get current file pointer.
     fseek(fp, 0, SEEK_SET); // seek to the beginning of the file.
 
-    int split_at = ceil(size / num_splits);
+    int split_at = floor(size / num_splits);
+    
+    printf("splitat %d.\n", split_at);
     int file_num = 0;
-    int char_at = 0;
-    char last_char;
-    char* curr_str;
-    FILE* curr_file;
+    char curr_str[500];
+    FILE* curr_file = NULL;
+    
+    int curr_file_size = 0;  // Used to calculate the split point.
 
-    printf("here");
-    while (fscanf(fp, "%s", curr_str) > 1){
-        printf("%s", curr_str);
+    while (fscanf(fp, "%s", curr_str) > 0){
+        
+        if ((strlen(curr_str) + 1) > split_at) {
+            fprintf(stderr, "One (or more) string cannot fit into a file with the number of splits.\n");
+            exit(1);
+        }
+        
+        if (curr_file_size >= split_at || curr_file == NULL){
+            // Close the file opened earlier.
+            if (curr_file != NULL){
+                fclose(curr_file);
+            }
+            
+            char map_filename[50];
+            sprintf(map_filename, "./split/split_%d.txt", file_num++);
+            curr_file = fopen(map_filename, "w");
+            
+            curr_file_size = 0;  // Reset the file size.
+        }
+        fprintf(curr_file, "%s ", curr_str);
+        
+        curr_file_size += strlen(curr_str) + 1;
     }
 }
 
-key_value* _map(char* fileName) {
-    // Read file. 
-    // For each word, create a new key as word, value as 1. 
-    FILE *fp_in = fopen(fileName, "r");
-    char* temp;
+key_value* _map(int index) {
+    char filename[50];
+    sprintf(filename, "./split/split_%d.txt", index);
+    FILE *fp_in = fopen(filename, "r");
+    char key[500];
     key_value *head, *curr; 
     head = curr = NULL;
     
-    int i = 0; 
-    while (fscanf(fp_in, "%s", temp) > 0){
-        printf("Key: %s\n", temp);
+    while (fscanf(fp_in, "%s", key) > 0) {
+        // Set default value for the values.
+        int* default_value = malloc(sizeof(int));
+        *default_value = 1;
         
         if (head == NULL) {
-            head = (key_value*)malloc(sizeof(key_value));;
+            head = (key_value*) malloc(sizeof(key_value));;
             curr = head;
         } 
         else{
             curr->next = (key_value*)malloc(sizeof(key_value));;
             curr = curr->next;
         }
-        curr->key = temp;
-        curr->value = (int) i;
+        
+        char* key_copy = malloc(sizeof(key));
+        strcpy(key_copy, key);
+        
+        curr->key = key_copy;
+        curr->value = (void*) &default_value;
         curr->next = NULL;
-        i++;
     }
+    
     fclose(fp_in);
     return head;
 }
@@ -106,25 +99,54 @@ key_value* _reduce(char* key, LinkedList* list) {
 }
 
 int _shuffle(char* key) {
-    printf("Shuffle key is %s Char is %c\n", key, *key);
-    int* t = (int*)malloc(sizeof(int));
-    (*t) = ((*key) - 'a' + 1) % 5;
-    printf("Key is %s Reducer Index is %d\n", key, *t);
-    return *t;
+//     switch(key[0]) {
+//         case 97 ... 99:
+//         case 65 ... 67:
+//             return 0;
+        
+//         case 100 ... 102:
+//         case 68 ... 70:
+//             return 1;
+        
+//         case 103 ... 105:
+//         case 71 ... 73:
+//             return 2;
+
+//         case 106 ... 108:
+//         case 74 ... 76:
+//             return 3;
+
+//         case 109 ... 111:
+//         case 77 ... 79:
+//             return 4;
+
+//         case 112 ... 114:
+//         case 80 ... 82:
+//             return 5;
+        
+//         case 115 ... 117:
+//         case 83 ... 85:
+//             return 6;
+        
+//         case 118 ... 120:
+//         case 86 ... 88:
+//             return 7;
+
+//         case 121 ... 123:
+//         case 89 ... 91:
+//             return 8;
+
+//         default:
+//             return 9;
+
+//     }
+        int a =  (tolower(key[0]) - 'a' + 1) % NUMBER_OF_REDUCERS;
+    return a;
+        
 }
 
 int main(){
     initialize_map_reduce(NUMBER_OF_MAPPERS, NUMBER_OF_REDUCERS, &_split, &_map, &_reduce, &_shuffle);
-    int* t = (int*)malloc(sizeof(int));
-    (*t) = 1;
-    
-    char *filename = "input.txt";
-    
-    _split(filename, NUMBER_OF_MAPPERS);
-//     printf("Here\n");
-    
-    
-//     run_mapper(t);
-//     // run_reducer(t);
+    run_map_reduce();
     return 0;
 }
