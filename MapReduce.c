@@ -14,7 +14,7 @@ int (*shuffle) (char*);
 int num_mappers;
 int num_reducers; 
 
-void initialize_map_reduce(int n_mappers, int n_reducers, char** (*s) (char*) , key_value* (*m) (char*) , void (*r)(HashMap*) , int (*sf) (char*)){
+void initialize_map_reduce(int n_mappers, int n_reducers, char** (*s) (char*, int) , key_value* (*m) (char*) , key_value* (*r)(char*, LinkedList*) , int (*sf) (char*)){
     num_mappers = n_mappers;
     num_reducers = n_reducers;
     split = s;
@@ -158,7 +158,7 @@ char* get_file_name_from_mapper_index(int index) {
 }
 
 char* get_split_filename_from_mapper_index(int index){
-    char* file_name = (char*)malloc(19);
-    sprintf(file_name, "split/split_0%d.txt", index);
+    char* file_name = (char*)malloc(21);
+    sprintf(file_name, "./split/split_0%d.txt", index);
     return file_name;
 }

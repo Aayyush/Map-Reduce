@@ -25,7 +25,7 @@ extern int (*shuffle) (char*);
 extern int num_mappers; 
 extern int num_reducers; 
 
-void initialize_map_reduce(int n_mappers, int n_reducers, char** (*s) (char*) , key_value* (*m) (char*) , void (*r)(HashMap*) , int (*sf) (char*));
+void initialize_map_reduce(int n_mappers, int n_reducers, char** (*s) (char*, int) , key_value* (*m) (char*) , key_value* (*r)(char*, LinkedList*) , int (*sf) (char*));
 
 void* run_mapper(void* args);
 

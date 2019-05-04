@@ -1,36 +1,66 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "MapReduce.h"
+#include <string.h>
+#include <stdbool.h>
 
 #define NUMBER_OF_MAPPERS 10
 #define NUMBER_OF_REDUCERS 4
 
-char** _split(char* fileName, int number_of_mappers) {
-    FILE *input_file = fopen("input.txt", "r");
-    char* word; 
-    int word_count = 0; 
-    char* fileName;
-    FILE *file_handles[number_of_mappers];
-    FILE *output_file_handle; 
-    int words_written;
+// char** _split(char* fileName, int number_of_mappers) {
+//     FILE *input_file;
+//     char *word; 
+//     int word_count = 0; 
+//     FILE *file_handles[number_of_mappers];
+//     FILE *input_fh; 
+//     FILE *output_file_handle; 
+//     int words_written;
     
-    // Declare a pointer to array of strings for fileNames. 
-    char*** list_of_split_files = (char***)malloc(sizeof(char**) * number_of_mappers);
+//     // Declare a pointer to array of strings for fileNames. 
+//     char ***list_of_split_files = (char***)malloc(sizeof(char**) * number_of_mappers);
     
-    // Open all the file handles. 
-    for(int i = 0; i < number_of_mappers; ++i){
-        (*list_of_split_files)[i] = get_split_filename_from_mapper_index(i);
-        file_handles[i] = fopen(get_split_filename_from_mapper_index(i), "w+");
+//     // Open all the file handles. 
+//     for(int i = 0; i < number_of_mappers; ++i){
+//         char *address_to_write = (*list_of_split_files) + i * sizeof(char*);
+//         printf("File name is : %s\n", get_split_filename_from_mapper_index(i));
+//         address_to_write = get_split_filename_from_mapper_index(i);
+//         file_handles[i] = fopen(get_split_filename_from_mapper_index(i), "w+");
+//     }
+    
+//     printf("File handles open\n");
+    
+//     words_written = 0;
+//     input_file = fopen(fileName, "r");
+//     while(fscanf(input_file, "%s", word) > 1){
+//         // Get the file to write to using count%number_of_mappers. 
+//         printf("Word: %s\n", word);
+//         output_file_handle = file_handles[words_written % number_of_mappers];
+//         fprintf(output_file_handle, "%s\n", word);
+//     }
+    
+//     return *list_of_split_files;
+// }
+
+
+void _split(char* filename, int num_splits){
+    FILE* fp;
+    fp = fopen(filename, "r");
+
+    fseek(fp, 0, SEEK_END); // seek to end of file.
+    int size = ftell(fp); // get current file pointer.
+    fseek(fp, 0, SEEK_SET); // seek to the beginning of the file.
+
+    int split_at = ceil(size / num_splits);
+    int file_num = 0;
+    int char_at = 0;
+    char last_char;
+    char* curr_str;
+    FILE* curr_file;
+
+    printf("here");
+    while (fscanf(fp, "%s", curr_str) > 1){
+        printf("%s", curr_str);
     }
-    
-    words_written = 0;
-    while(fscanf(input_file, "%s", word) >0){
-        // Get the file to write to using count%number_of_mappers. 
-        output_file_handle = file_handles[words_written % number_of_mappers];
-        fprintf(output_file_handle, "%s\n", word);
-    }
-    
-    return list_of_split_files;
 }
 
 key_value* _map(char* fileName) {
@@ -87,7 +117,14 @@ int main(){
     initialize_map_reduce(NUMBER_OF_MAPPERS, NUMBER_OF_REDUCERS, &_split, &_map, &_reduce, &_shuffle);
     int* t = (int*)malloc(sizeof(int));
     (*t) = 1;
-    run_mapper(t);
-    run_reducer(t);
+    
+    char *filename = "input.txt";
+    
+    _split(filename, NUMBER_OF_MAPPERS);
+//     printf("Here\n");
+    
+    
+//     run_mapper(t);
+//     // run_reducer(t);
     return 0;
 }
