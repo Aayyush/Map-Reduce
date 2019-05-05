@@ -38,6 +38,12 @@ list -> Linked list of aggregated records.
 We provide a input.txt file which contains a long string. The main.c file implements the shuffle, map, and reduce functions, and
 the word count in the input file is written to results.txt.
 
+## Compilation Process
+```
+> make
+> ./run
+````
+
 # Contributors
 - Aayush Gupta
 - Bijesh Subedi
