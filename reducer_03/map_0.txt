@@ -1,3 +1,0 @@
-leaves 1
-knew 1
-language 1

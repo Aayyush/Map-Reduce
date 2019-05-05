@@ -1,4 +1,0 @@
-me 1
-many 1
-on 1
-my 1

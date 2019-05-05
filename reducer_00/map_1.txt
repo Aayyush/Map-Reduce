@@ -1,4 +1,0 @@
-between 1
-above 1
-all 1
-at 1

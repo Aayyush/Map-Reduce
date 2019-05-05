@@ -36,24 +36,18 @@ void* run_mapper(void* args){
     int mapper_index = *(int*)args;
     
     FILE *file_handles[num_reducers];
-    char* reducer_directory;
-    char* out_file_location; 
+
     int reducer_index;
-    struct stat sb;
     key_value* key_value_list; 
-    char* input_filename = get_file_name_from_mapper_index(mapper_index);
-    
-    // Make directory for all the reducers. 
-    for (int i = 0; i < num_reducers; ++i){
+    char *reducer_directory, *out_file_location;
+    char *input_filename = get_file_name_from_mapper_index(mapper_index);
+    for(int i = 0; i < num_reducers; i++) {
         reducer_directory = get_reducer_directory_from_index(i);
-        if (!(stat(reducer_directory, &sb) == 0 && S_ISDIR(sb.st_mode))){
-            mkdir(reducer_directory, 0777);
-        }
         out_file_location = get_output_file_location(reducer_directory, mapper_index);
         file_handles[i] = fopen(out_file_location, "w");
     }
-    
-     key_value_list = (*map)(mapper_index); 
+
+    key_value_list = (*map)(mapper_index); 
     
     int i = 0;
     for (key_value *curr = key_value_list; curr != NULL; curr = curr->next) { 
@@ -116,6 +110,14 @@ void* run_reducer(void* args){
     }
     
     char filename[100];
+    
+    // Create reducer_results directory if not exists. 
+    struct stat sb;
+    char *reducer_results_directory = "reducer_results";
+    if (!(stat(reducer_results_directory, &sb) == 0 && S_ISDIR(sb.st_mode))){
+            mkdir(reducer_results_directory, 0777);
+        }
+    
     sprintf(filename, "./reducer_results/reducer_%d.txt", reducer_index);
     FILE* fp = fopen(filename, "w");
     
@@ -141,9 +143,25 @@ void* run_reducer(void* args){
 }
 
 void run_map_reduce(){
+    // Create split directory if not exists. 
+    struct stat sb;
+    char *split_directory = "reducer_results";
+    if (!(stat(split_directory, &sb) == 0 && S_ISDIR(sb.st_mode))){
+        mkdir(split_directory, 0777);
+    }
     
     // Split the files.
     (*split)("input.txt", num_mappers);
+    
+    char* reducer_directory;
+    char* out_file_location; 
+    // Make directory for all the reducers. 
+    for (int i = 0; i < num_reducers; ++i){
+        reducer_directory = get_reducer_directory_from_index(i);
+        if (!(stat(reducer_directory, &sb) == 0 && S_ISDIR(sb.st_mode))){
+            mkdir(reducer_directory, 0777);
+        }
+    }
     
      // Create map threads.
     pthread_t mapper_ids[num_mappers];

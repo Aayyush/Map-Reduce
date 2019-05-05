@@ -14,4 +14,6 @@ HashMap.o: HashMap.c HashMap.h
 	$(CC) $(CFLAGS) -c HashMap.c
 
 clean:
-	$(RM) run *.o *~
+	$(RM) run *.o *~ *.h.gch *.out
+	$(RM) -rf reducer_*
+	$(RM) -f split/* 

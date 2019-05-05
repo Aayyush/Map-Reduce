@@ -1,6 +1,0 @@
-each 1
-formula 1
-for 1
-do 1
-do 1
-did 1

@@ -1,3 +1,0 @@
-repeated 1
-quite 1
-parrot-like,--I 1

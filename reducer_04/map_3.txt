@@ -1,4 +1,0 @@
-open 1
-met 1
-night 1
-me 1
