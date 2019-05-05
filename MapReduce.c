@@ -54,6 +54,7 @@ void* run_mapper(void* args){
     }
     
      key_value_list = (*map)(mapper_index); 
+    printf("Here\n");
     
     int i = 0;
     for (key_value *curr = key_value_list; curr != NULL; curr = curr->next) { 

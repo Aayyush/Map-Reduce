@@ -28,6 +28,7 @@ void _split(char* filename, int num_splits){
 
     while (fscanf(fp, "%s", curr_str) > 0){
         
+        printf("String is: %s\n", curr_str);
         if ((strlen(curr_str) + 1) > split_at) {
             fprintf(stderr, "One (or more) string cannot fit into a file with the number of splits.\n");
             exit(1);
@@ -73,8 +74,25 @@ key_value* _map(int index) {
             curr = curr->next;
         }
         
+        // Move the char pointer forward until alphabet character. 
         char* key_copy = malloc(sizeof(key));
         strcpy(key_copy, key);
+        
+        int i = 0;
+        while (i < sizeof(key) && !isalpha(key[i])){
+            i++;
+            key_copy++;
+        }
+        
+        // Move i from back until alphabet character.
+        i = strlen(key_copy) - 1;
+        while (i > 0 && !isalpha(key_copy[i])) 
+            i--; 
+        
+        // Add null character at i + 1. 
+        key_copy[i+1] = '\0';
+        
+        printf("Key is %s Length is %d\n", key_copy, strlen(key_copy));
         
         curr->key = key_copy;
         curr->value = (void*) default_value;
