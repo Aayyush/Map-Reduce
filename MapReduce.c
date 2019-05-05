@@ -75,7 +75,7 @@ void* run_reducer(void* args){
     
     
     // Loop through all the keys in it's associated files.
-    for (int i = 0; i < 1; i++){  // TODO: Replace 1 with num_mappers.
+    for (int i = 0; i < num_mappers; i++){  // TODO: Replace 1 with num_mappers.
         
         // Get name and open the file.
         char filename[100];
