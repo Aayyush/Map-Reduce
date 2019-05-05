@@ -9,7 +9,6 @@
 #define NUMBER_OF_MAPPERS 10
 #define NUMBER_OF_REDUCERS 10
 
-
 void _split(char* filename, int num_splits){
     FILE* fp;
     fp = fopen(filename, "r");
@@ -19,12 +18,12 @@ void _split(char* filename, int num_splits){
     fseek(fp, 0, SEEK_SET); // seek to the beginning of the file.
 
     int split_at = floor(size / num_splits);
-    
     printf("Split at %d.\n", split_at);
+    
     int file_num = 0;
     char curr_str[500];
+    char map_filename[50];
     FILE* curr_file = NULL;
-    
     int curr_file_size = 0;  // Used to calculate the split point.
 
     while (fscanf(fp, "%s", curr_str) > 0){
@@ -39,16 +38,16 @@ void _split(char* filename, int num_splits){
                 fclose(curr_file);
             }
             
-            char map_filename[50];
             sprintf(map_filename, "./split/split_%d.txt", file_num++);
             curr_file = fopen(map_filename, "w");
             
             curr_file_size = 0;  // Reset the file size.
         }
         fprintf(curr_file, "%s ", curr_str);
-        
         curr_file_size += strlen(curr_str) + 1;
     }
+    fclose(fp);
+    fclose(curr_file);
 }
 
 key_value* _map(int index) {
@@ -104,6 +103,7 @@ key_value* _reduce(char* key, LinkedList* list) {
     key_value* kv = calloc(1, sizeof(kv));
     kv->key = key;
     
+    // Aggregate all the nodes in the linked list. 
     int* result = calloc(1, sizeof(int));
     for (LinkedList* temp_list = list; temp_list != NULL; temp_list = temp_list->next){
         *result = *result + temp_list->value;
@@ -113,48 +113,8 @@ key_value* _reduce(char* key, LinkedList* list) {
 }
 
 int _shuffle(char* key) {
-    switch(key[0]) {
-        case 97 ... 99:
-        case 65 ... 67:
-            return 0;
-        
-        case 100 ... 102:
-        case 68 ... 70:
-            return 1;
-        
-        case 103 ... 105:
-        case 71 ... 73:
-            return 2;
-
-        case 106 ... 108:
-        case 74 ... 76:
-            return 3;
-
-        case 109 ... 111:
-        case 77 ... 79:
-            return 4;
-
-        case 112 ... 114:
-        case 80 ... 82:
-            return 5;
-        
-        case 115 ... 117:
-        case 83 ... 85:
-            return 6;
-        
-        case 118 ... 120:
-        case 86 ... 88:
-            return 7;
-
-        case 121 ... 123:
-        case 89 ... 91:
-            return 8;
-
-        default:
-            return 9;
-
-    }
-        
+   // Use the key to split between the mappers. 
+   return (tolower(*key) - 'a') % NUMBER_OF_MAPPERS; 
 }
 
 int main(){

@@ -25,47 +25,45 @@ void initialize_map_reduce(int n_mappers, int n_reducers, void (*s) (char*, int)
 }
 
 void* run_mapper(void* args){
-    // Cast args to index. 
-    // Get filename from index. 
-    // Call map with the filename and get linked list of key and values. 
-    // Iterate over each node, get the key, use shuffle to get the reducer index. 
-    // Get filename from the reducer index. 
-    // Make a directory for the reducer if it does not exist. 
-    // If exists, write to the reducer directory. 
-    
     int mapper_index = *(int*)args;
-    
-    FILE *file_handles[num_reducers];
-
+    FILE *file_handles[num_reducers]; // File Handles for all the reducer_directory files. 
     int reducer_index;
-    key_value* key_value_list; 
+    key_value* key_value_list; // Linked list to be returned by user-defined map. 
     char *reducer_directory, *out_file_location;
     char *input_filename = get_file_name_from_mapper_index(mapper_index);
+    
+    // Setup file handles. 
     for(int i = 0; i < num_reducers; i++) {
         reducer_directory = get_reducer_directory_from_index(i);
         out_file_location = get_output_file_location(reducer_directory, mapper_index);
         file_handles[i] = fopen(out_file_location, "w");
     }
 
+    // User defined map function. 
     key_value_list = (*map)(mapper_index); 
     
-    int i = 0;
-    for (key_value *curr = key_value_list; curr != NULL; curr = curr->next) { 
+    // Write the map results to files using reducer index.     
+    key_value *curr = key_value_list;
+    key_value *temp;
+    while(curr) {
         reducer_index = (*shuffle)(curr->key);
         fprintf(file_handles[reducer_index], "%s %d\n", curr->key, *(int*)curr->value);
-        i++;
+        temp = curr;
+        curr = curr->next;
+        
+        // Free each node as you write to file. 
+        free(temp);
     }
     
+    // Close all file handles. 
     for (int i = 0; i < num_reducers; i++){
         fclose(file_handles[i]);
     }
-    return NULL;
 }
 
 void* run_reducer(void* args){
     int reducer_index = *(int *) args;
     HashMap* map = initialize_hash_map();
-    
     
     // Loop through all the keys in it's associated files.
     for (int i = 0; i < num_mappers; i++){  // TODO: Replace 1 with num_mappers.
@@ -115,8 +113,8 @@ void* run_reducer(void* args){
     struct stat sb;
     char *reducer_results_directory = "reducer_results";
     if (!(stat(reducer_results_directory, &sb) == 0 && S_ISDIR(sb.st_mode))){
-            mkdir(reducer_results_directory, 0777);
-        }
+        mkdir(reducer_results_directory, 0777);
+    }
     
     sprintf(filename, "./reducer_results/reducer_%d.txt", reducer_index);
     FILE* fp = fopen(filename, "w");
@@ -126,11 +124,20 @@ void* run_reducer(void* args){
     KeyValue* curr_kv;
     while ((curr_kv = next_hash_map_item(iter))){
         key_value* ret_kv = (*reduce)(curr_kv->key, (LinkedList*)curr_kv->value);
+        
         // Print the linked list.
         printf("%s = ", ret_kv->key);
-        for (LinkedList* x = (LinkedList*)curr_kv->value; x; x= x->next){
-            printf("%d + ", x->value);
+        LinkedList *temp; 
+        LinkedList* curr = (LinkedList*)curr_kv->value;
+        while(curr) {
+            printf("%d + ", curr->value);
+            temp = curr;
+            curr = curr -> next;
+            
+            // Remove node as you go. 
+            free(temp);
         }
+        
         fprintf(fp, "%s %d\n", ret_kv->key, *(int*)ret_kv->value);
         printf(" = %d\n", *(int*)ret_kv->value);
         free(ret_kv->value);
