@@ -7,7 +7,7 @@
 #include "MapReduce.h"
 
 // Function signatures for the user-input. 
-char** (*split) (char*, int);
+void (*split) (char*, int);
 key_value* (*map) (int);
 key_value* (*reduce)(char*, LinkedList*);
 int (*shuffle) (char*);
@@ -15,7 +15,7 @@ int (*shuffle) (char*);
 int num_mappers;
 int num_reducers; 
 
-void initialize_map_reduce(int n_mappers, int n_reducers, char** (*s) (char*, int) , key_value* (*m) (int) , key_value* (*r)(char*, LinkedList*) , int (*sf) (char*)){
+void initialize_map_reduce(int n_mappers, int n_reducers, void (*s) (char*, int) , key_value* (*m) (int) , key_value* (*r)(char*, LinkedList*) , int (*sf) (char*)){
     num_mappers = n_mappers;
     num_reducers = n_reducers;
     split = s;
@@ -54,7 +54,6 @@ void* run_mapper(void* args){
     }
     
      key_value_list = (*map)(mapper_index); 
-    printf("Here\n");
     
     int i = 0;
     for (key_value *curr = key_value_list; curr != NULL; curr = curr->next) { 

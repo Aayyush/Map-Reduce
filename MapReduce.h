@@ -18,14 +18,14 @@ typedef struct LinkedList {
     LinkedList* next;
 } LinkedList;
 
-extern char** (*split) (char*, int);
+extern void (*split) (char*, int);
 extern key_value* (*map) (int);
 extern key_value* (*reduce)(char*, LinkedList*);
 extern int (*shuffle) (char*);
 extern int num_mappers; 
 extern int num_reducers; 
 
-void initialize_map_reduce(int n_mappers, int n_reducers, char** (*s) (char*, int) , key_value* (*m) (int) , key_value* (*r)(char*, LinkedList*) , int (*sf) (char*));
+void initialize_map_reduce(int n_mappers, int n_reducers, void (*s) (char*, int) , key_value* (*m) (int) , key_value* (*r)(char*, LinkedList*) , int (*sf) (char*));
 
 void* run_mapper(void* args);
 

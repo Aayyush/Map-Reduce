@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <math.h>
 
 #define NUMBER_OF_MAPPERS 10
 #define NUMBER_OF_REDUCERS 10
@@ -19,7 +20,7 @@ void _split(char* filename, int num_splits){
 
     int split_at = floor(size / num_splits);
     
-    printf("splitat %d.\n", split_at);
+    printf("Split at %d.\n", split_at);
     int file_num = 0;
     char curr_str[500];
     FILE* curr_file = NULL;
@@ -27,8 +28,6 @@ void _split(char* filename, int num_splits){
     int curr_file_size = 0;  // Used to calculate the split point.
 
     while (fscanf(fp, "%s", curr_str) > 0){
-        
-        printf("String is: %s\n", curr_str);
         if ((strlen(curr_str) + 1) > split_at) {
             fprintf(stderr, "One (or more) string cannot fit into a file with the number of splits.\n");
             exit(1);
@@ -91,8 +90,6 @@ key_value* _map(int index) {
         
         // Add null character at i + 1. 
         key_copy[i+1] = '\0';
-        
-        printf("Key is %s Length is %d\n", key_copy, strlen(key_copy));
         
         curr->key = key_copy;
         curr->value = (void*) default_value;
