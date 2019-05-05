@@ -18,14 +18,14 @@ typedef struct LinkedList {
     LinkedList* next;
 } LinkedList;
 
-extern char** (*split) (char*);
-extern key_value* (*map) (char*);
+extern void (*split) (char*, int);
+extern key_value* (*map) (int);
 extern key_value* (*reduce)(char*, LinkedList*);
 extern int (*shuffle) (char*);
 extern int num_mappers; 
 extern int num_reducers; 
 
-void initialize_map_reduce(int n_mappers, int n_reducers, char** (*s) (char*) , key_value* (*m) (char*) , void (*r)(HashMap*) , int (*sf) (char*));
+void initialize_map_reduce(int n_mappers, int n_reducers, void (*s) (char*, int) , key_value* (*m) (int) , key_value* (*r)(char*, LinkedList*) , int (*sf) (char*));
 
 void* run_mapper(void* args);
 
@@ -37,6 +37,8 @@ char* get_file_name_from_mapper_index(int index);
 
 char* get_reducer_directory_from_index(int index);
 
-char* get_output_file_location(char* reducer_directory, int index);
+char* get_output_file_location(char* reducer_directory, int m_index);
+
+char* get_split_filename_from_mapper_index(int index);
 
 #endif

@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -g 
+CFLAGS = -g -pthread
 
 run: main.o MapReduce.o HashMap.o
 	$(CC) $(CFLAGS) -o run main.o MapReduce.o HashMap.o
@@ -14,4 +14,5 @@ HashMap.o: HashMap.c HashMap.h
 	$(CC) $(CFLAGS) -c HashMap.c
 
 clean:
-	$(RM) run *.o *~
+	$(RM) run *.o *~ *.h.gch *.out
+	$(RM) -rf reducer_* split*
