@@ -172,6 +172,19 @@ void run_map_reduce(){
     }
     
     // Join the files.
+    char key_buffer[500], input_filename[100];
+	int value;
+	FILE *input_file, *output_file; 
+	output_file = fopen("./results.txt", "w");
+	for(int i = 0; i < num_reducers; i++) {
+		sprintf(input_filename, "./reducer_results/reducer_%d.txt", i);
+		input_file = fopen(input_filename, "r");
+		while(fscanf(input_file, "%s %d", key_buffer, &value) > 1){
+			fprintf(output_file, "(%s, %d)\n", key_buffer, value);
+		}
+		fclose(input_file);
+	}
+
     return;
 }
 
