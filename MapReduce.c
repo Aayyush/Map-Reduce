@@ -152,7 +152,7 @@ void* run_reducer(void* args){
 void run_map_reduce(){
     // Create split directory if not exists. 
     struct stat sb;
-    char *split_directory = "reducer_results";
+    char *split_directory = "split";
     if (!(stat(split_directory, &sb) == 0 && S_ISDIR(sb.st_mode))){
         mkdir(split_directory, 0777);
     }

@@ -15,5 +15,4 @@ HashMap.o: HashMap.c HashMap.h
 
 clean:
 	$(RM) run *.o *~ *.h.gch *.out
-	$(RM) -rf reducer_*
-	$(RM) -f split/* 
+	$(RM) -rf reducer_* split*
